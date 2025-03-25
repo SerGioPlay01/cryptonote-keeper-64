@@ -1,7 +1,8 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ChevronLeft, X, ChevronRight } from "lucide-react";
 
 interface MarkdownPreviewModalProps {
   markdown: string;
@@ -11,7 +12,9 @@ interface MarkdownPreviewModalProps {
 const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({ markdown, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [fontSize, setFontSize] = useState(16);
   
   useEffect(() => {
     // Show the modal with animation
@@ -43,6 +46,20 @@ const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({ markdown, o
     }
   };
 
+  const increaseFontSize = () => {
+    setFontSize(prev => Math.min(prev + 1, 24)); // Max font size: 24px
+  };
+
+  const decreaseFontSize = () => {
+    setFontSize(prev => Math.max(prev - 1, 12)); // Min font size: 12px
+  };
+
+  const scrollToTop = () => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  };
+
   // Convert markdown to HTML
   const html = marked(markdown, { 
     breaks: true,
@@ -61,24 +78,77 @@ const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({ markdown, o
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Markdown Preview</h2>
-          <button
-            className="p-2 hover:bg-secondary rounded-full transition-colors"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Font size controls */}
+            <div className="hidden md:flex items-center gap-1 mr-2">
+              <button
+                className="p-1.5 hover:bg-secondary rounded-md transition-colors"
+                onClick={decreaseFontSize}
+                aria-label="Decrease font size"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="text-sm">{fontSize}px</span>
+              <button
+                className="p-1.5 hover:bg-secondary rounded-md transition-colors"
+                onClick={increaseFontSize}
+                aria-label="Increase font size"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+            
+            {/* Mobile controls - simplified */}
+            <div className="flex md:hidden items-center gap-1">
+              <button
+                className="p-1.5 hover:bg-secondary rounded-md transition-colors"
+                onClick={decreaseFontSize}
+                aria-label="Smaller text"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                className="p-1.5 hover:bg-secondary rounded-md transition-colors"
+                onClick={increaseFontSize}
+                aria-label="Larger text"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+            
+            {/* Close button */}
+            <button
+              className="p-1.5 hover:bg-secondary rounded-md transition-colors"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
         
-        <div className="flex-1 overflow-auto border rounded-md p-4 bg-card dark:bg-background">
+        <div 
+          ref={contentRef}
+          className="flex-1 overflow-auto border rounded-md p-4 bg-card dark:bg-background"
+        >
           <div 
             className="markdown-preview prose dark:prose-invert max-w-none"
+            style={{ fontSize: `${fontSize}px` }}
             dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
+        
+        {/* Bottom toolbar for mobile */}
+        {isMobile && (
+          <div className="flex justify-between items-center mt-3">
+            <button
+              className="p-2 bg-secondary hover:bg-secondary/80 rounded-md transition-colors text-sm"
+              onClick={scrollToTop}
+            >
+              Back to top
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
