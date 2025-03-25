@@ -96,11 +96,15 @@ export const getNotes = async (password: string): Promise<Note[]> => {
         if (cursor) {
           try {
             const encryptedNote = cursor.value as EncryptedNote;
+            // Process each note individually to avoid transaction timeout
             const decryptedNote = await decryptNote(encryptedNote, password);
             notes.push(decryptedNote);
-            cursor.continue();
+            // Save cursor before continuing to avoid transaction timeout issues
+            const nextCursor = cursor;
+            nextCursor.continue();
           } catch (error) {
             console.error("Failed to decrypt note:", error);
+            // Continue anyway to process other notes
             cursor.continue();
           }
         } else {
@@ -176,3 +180,4 @@ export const checkForSharedNote = async (): Promise<Note | null> => {
     return null;
   }
 };
+

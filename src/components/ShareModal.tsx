@@ -22,6 +22,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ note, password, onClose }) => {
   const [copying, setCopying] = useState(false);
   const [sharePassword, setSharePassword] = useState("");
   const [useCustomPassword, setUseCustomPassword] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   useEffect(() => {
     // Show the modal with animation
@@ -60,8 +61,15 @@ const ShareModal: React.FC<ShareModalProps> = ({ note, password, onClose }) => {
   
   const generateShareLink = async () => {
     try {
+      setIsGenerating(true);
       // Use either custom password or the generated one
       const finalPassword = useCustomPassword ? sharePassword : password;
+      
+      if (!finalPassword) {
+        toast.error("No password provided. Cannot generate share link.");
+        setIsGenerating(false);
+        return;
+      }
       
       // Encrypt the note using the selected password
       const encrypted = await encryptNote(note, finalPassword);
@@ -71,9 +79,11 @@ const ShareModal: React.FC<ShareModalProps> = ({ note, password, onClose }) => {
       const url = `${window.location.origin}?share=${encodeURIComponent(base64Data)}`;
       
       setShareUrl(url);
+      setIsGenerating(false);
     } catch (error) {
       console.error("Failed to generate share link:", error);
       toast.error("Failed to generate share link. Please try again.");
+      setIsGenerating(false);
     }
   };
   
@@ -149,9 +159,10 @@ const ShareModal: React.FC<ShareModalProps> = ({ note, password, onClose }) => {
           <div>
             <button
               onClick={generateShareLink}
-              className="w-full bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+              disabled={isGenerating}
+              className="w-full bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Generate Share Link
+              {isGenerating ? "Generating..." : "Generate Share Link"}
             </button>
           </div>
           
@@ -193,3 +204,4 @@ const ShareModal: React.FC<ShareModalProps> = ({ note, password, onClose }) => {
 };
 
 export default ShareModal;
+

@@ -5,7 +5,7 @@ import NoteEditor from "./NoteEditor";
 import ShareModal from "./ShareModal";
 import PasswordModal from "./PasswordModal";
 import { toast } from "./Toast";
-import { initDb, getNotes, saveNote, deleteNote } from "../utils/noteStorage";
+import { initDb, getNotes, saveNote, deleteNote, checkForSharedNote } from "../utils/noteStorage";
 
 interface Note {
   id: string;
@@ -30,10 +30,19 @@ const NotesApp: React.FC = () => {
       try {
         await initDb();
         setDbInitialized(true);
-        setShowPasswordModal(true);
+        
+        // Check for shared note
+        const sharedNote = await checkForSharedNote();
+        if (sharedNote) {
+          setCurrentNote(sharedNote);
+          toast.info("Shared note loaded. Save it to keep it in your notes.");
+        } else {
+          setShowPasswordModal(true);
+        }
       } catch (error) {
         console.error("Failed to initialize database:", error);
         toast.error("Failed to initialize database. Please try again.");
+        setShowPasswordModal(true);
       }
     };
     
@@ -243,3 +252,4 @@ const NotesApp: React.FC = () => {
 };
 
 export default NotesApp;
+
