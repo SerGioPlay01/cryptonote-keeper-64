@@ -214,23 +214,6 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onChange }) => {
               </>
             )}
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setShowPreview(true)}
-              className="px-3 py-1 text-sm bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
-              title="Preview Markdown"
-            >
-              Preview
-            </button>
-            <button 
-              onClick={toggleEditorMode}
-              className={`px-3 py-1 text-sm ${isMarkdownMode ? 'bg-primary text-primary-foreground' : 'bg-secondary hover:bg-secondary/80'} rounded-md transition-colors`}
-              title="Toggle Markdown Mode"
-            >
-              {isMarkdownMode ? 'HTML' : 'Markdown'}
-            </button>
-          </div>
         </div>
       </div>
       
@@ -251,6 +234,24 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onChange }) => {
           onBlur={handleContentChange}
         />
       )}
+      
+      {/* Bottom toolbar with Preview and Markdown toggle buttons */}
+      <div className="border-t p-2 bg-secondary/50 flex justify-end items-center gap-2">
+        <button 
+          onClick={() => setShowPreview(true)}
+          className="px-3 py-1 text-sm bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+          title="Preview Markdown"
+        >
+          Preview
+        </button>
+        <button 
+          onClick={toggleEditorMode}
+          className={`px-3 py-1 text-sm ${isMarkdownMode ? 'bg-primary text-primary-foreground' : 'bg-secondary hover:bg-secondary/80'} rounded-md transition-colors`}
+          title="Toggle Markdown Mode"
+        >
+          {isMarkdownMode ? 'HTML' : 'Markdown'}
+        </button>
+      </div>
       
       {showPreview && (
         <MarkdownPreviewModal 
