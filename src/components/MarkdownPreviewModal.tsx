@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { marked } from "marked";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MarkdownPreviewModalProps {
   markdown: string;
@@ -10,6 +11,7 @@ interface MarkdownPreviewModalProps {
 const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({ markdown, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     // Show the modal with animation
@@ -53,12 +55,16 @@ const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({ markdown, o
       className="modal-backdrop"
       onClick={handleBackdropClick}
     >
-      <div ref={modalRef} className="modal w-full max-w-3xl h-[80vh] flex flex-col">
+      <div 
+        ref={modalRef} 
+        className={`modal ${isMobile ? 'w-[95%]' : 'w-full max-w-3xl'} h-[90vh] md:h-[80vh] flex flex-col`}
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Markdown Preview</h2>
           <button
-            className="p-2 hover:bg-secondary rounded-full"
+            className="p-2 hover:bg-secondary rounded-full transition-colors"
             onClick={onClose}
+            aria-label="Close"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -67,9 +73,9 @@ const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({ markdown, o
           </button>
         </div>
         
-        <div className="flex-1 overflow-auto border rounded-md p-4 bg-white dark:bg-black">
+        <div className="flex-1 overflow-auto border rounded-md p-4 bg-card dark:bg-background">
           <div 
-            className="markdown-preview prose dark:prose-invert max-w-none" 
+            className="markdown-preview prose dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
