@@ -1,24 +1,29 @@
 
 import React, { useState, useEffect } from "react";
 import NotesApp from "../components/NotesApp";
-import { checkForSharedNote } from "../utils/noteStorage";
+import { initDb } from "../utils/noteStorage";
 
 const Index = () => {
-  const [isCheckingShare, setIsCheckingShare] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  // Check for shared notes when the app loads
+  // Initialize database when the app loads
   useEffect(() => {
-    const checkShare = async () => {
-      await checkForSharedNote();
-      setIsCheckingShare(false);
+    const initializeDb = async () => {
+      try {
+        await initDb();
+      } catch (error) {
+        console.error("Failed to initialize database:", error);
+      } finally {
+        setIsInitializing(false);
+      }
     };
     
-    checkShare();
+    initializeDb();
   }, []);
 
   return (
     <div className="min-h-screen w-full overflow-hidden">
-      {isCheckingShare ? (
+      {isInitializing ? (
         <div className="flex justify-center items-center h-screen">
           <div className="spinner"></div>
         </div>
@@ -30,4 +35,3 @@ const Index = () => {
 };
 
 export default Index;
-

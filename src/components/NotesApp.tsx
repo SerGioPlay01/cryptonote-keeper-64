@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import NotesList from "./NotesList";
 import NoteEditor from "./NoteEditor";
@@ -23,6 +22,7 @@ const NotesApp: React.FC = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [dbInitialized, setDbInitialized] = useState(false);
+  const [passwordAttempted, setPasswordAttempted] = useState(false);
   
   // Initialize the database
   useEffect(() => {
@@ -37,12 +37,23 @@ const NotesApp: React.FC = () => {
           setCurrentNote(sharedNote);
           toast.info("Shared note loaded. Save it to keep it in your notes.");
         } else {
-          setShowPasswordModal(true);
+          // Check if there's a stored password in localStorage
+          const storedPassword = localStorage.getItem("cryptoNotesPassword");
+          if (storedPassword) {
+            setMasterPassword(storedPassword);
+          } else {
+            setShowPasswordModal(true);
+          }
         }
       } catch (error) {
         console.error("Failed to initialize database:", error);
         toast.error("Failed to initialize database. Please try again.");
         setShowPasswordModal(true);
+      } finally {
+        // Ensure loading state is updated even if there are errors
+        if (!dbInitialized) {
+          setLoading(false);
+        }
       }
     };
     
@@ -52,7 +63,13 @@ const NotesApp: React.FC = () => {
   // Load notes when master password is set
   useEffect(() => {
     if (dbInitialized && masterPassword) {
+      // Store password in localStorage for future sessions
+      localStorage.setItem("cryptoNotesPassword", masterPassword);
       loadNotes();
+      setPasswordAttempted(true);
+    } else if (dbInitialized && passwordAttempted) {
+      // If no password is set but user has attempted (cancelled password modal)
+      setLoading(false);
     }
   }, [dbInitialized, masterPassword]);
   
@@ -64,8 +81,13 @@ const NotesApp: React.FC = () => {
     } catch (error) {
       console.error("Failed to load notes:", error);
       toast.error("Failed to load notes. Please check your password.");
+      // Clear saved password if it failed to decrypt notes
+      localStorage.removeItem("cryptoNotesPassword");
+      setMasterPassword("");
+      setShowPasswordModal(true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
   
   const handleSaveNote = async (note: Partial<Note>) => {
@@ -176,6 +198,7 @@ const NotesApp: React.FC = () => {
             <button 
               onClick={loadNotes}
               className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md text-sm transition-colors"
+              disabled={!masterPassword}
             >
               Refresh Notes
             </button>
@@ -192,6 +215,7 @@ const NotesApp: React.FC = () => {
                     <button 
                       onClick={() => handleSaveNote(currentNote)}
                       className="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 rounded-md text-sm transition-colors"
+                      disabled={!masterPassword}
                     >
                       Save
                     </button>
@@ -235,6 +259,9 @@ const NotesApp: React.FC = () => {
           onCancel={() => {
             if (masterPassword) {
               setShowPasswordModal(false);
+            } else {
+              setPasswordAttempted(true);
+              setShowPasswordModal(false);
             }
           }}
         />
@@ -252,4 +279,3 @@ const NotesApp: React.FC = () => {
 };
 
 export default NotesApp;
-
