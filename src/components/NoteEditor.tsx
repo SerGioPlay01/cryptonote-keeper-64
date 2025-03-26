@@ -113,6 +113,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onChange }) => {
         onChange={(e) => onChange({ title: e.target.value })}
         placeholder="Note title"
         className="p-3 text-lg font-medium bg-transparent border-b focus:outline-none"
+        dir="ltr" // Ensure left-to-right text direction
       />
       
       <div className="editor-toolbar bg-secondary/50">
@@ -224,6 +225,8 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onChange }) => {
           defaultValue={note.content}
           onChange={handleMarkdownChange}
           placeholder="Write your markdown here..."
+          dir="ltr" // Ensure left-to-right text direction
+          style={{ unicodeBidi: 'plaintext' }} // Improve text direction handling
         />
       ) : (
         <div
@@ -232,6 +235,8 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onChange }) => {
           contentEditable
           onInput={handleContentChange}
           onBlur={handleContentChange}
+          dir="ltr" // Ensure left-to-right text direction
+          style={{ unicodeBidi: 'plaintext' }} // Improve text direction handling
         />
       )}
       
